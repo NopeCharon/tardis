@@ -75,8 +75,8 @@ jobs:
       - name: Install asv
         run: pip install asv
 
-      # - name: Accept all asv questions
-      #   run: asv machine --yes
+      - name: Accept all asv questions
+        run: asv machine --yes
 
       - name: Run benchmarks for last 5 commits if not PR
         if: github.event_name != 'pull_request_target'
@@ -120,11 +120,14 @@ jobs:
             exit 1
           fi
 
+      - run: git remote add upstream https://github.com/sympy/sympy.git
+      - run: git fetch upstream master
+
       - name: Compare main and PR head
-        run: asv compare upstream/master HEAD --config asv.conf.actions.json | tee asv-compare-output.log
+        run: asv compare upstream/master HEAD --config asv.conf.json | tee asv-compare-output.log
 
       - name: Compare main and PR head but only show changed results
-        run: asv compare upstream/master HEAD --only-changed --config asv.conf.actions.json | tee asv-compare-changed-output.log
+        run: asv compare upstream/master HEAD --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
 
       - name: Benchmarks compare output
         id: asv_pr_vs_main
