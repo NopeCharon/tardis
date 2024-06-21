@@ -121,10 +121,10 @@ jobs:
           fi
 
       - name: Compare main and PR head
-        run: asv compare ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} --config asv.conf.json | tee asv-compare-output.log
+        run: asv compare upstream/master HEAD --config asv.conf.json | tee asv-compare-output.log
 
       - name: Compare main and PR head but only show changed results
-        run: asv compare main HEAD --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
+        run: asv compare upstream/master HEAD --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
 
       - name: Benchmarks compare output
         id: asv_pr_vs_main
