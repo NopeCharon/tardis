@@ -75,6 +75,9 @@ jobs:
       - name: Install asv
         run: pip install asv
 
+      - run: git remote add upstream https://github.com/AkashKumar7902/tardis.git
+      - run: git fetch upstream master
+
       - name: Accept all asv questions
         run: asv machine --yes
 
@@ -119,9 +122,6 @@ jobs:
             echo "Some benchmarks have errors!"
             exit 1
           fi
-
-      - run: git remote add upstream https://github.com/sympy/sympy.git
-      - run: git fetch upstream master
 
       - name: Compare main and PR head
         run: asv compare upstream/master HEAD --config asv.conf.json | tee asv-compare-output.log
