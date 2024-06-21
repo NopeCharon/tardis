@@ -3,15 +3,15 @@ name: benchmarks
 on:
   push:
     branches:
-      - main
+      - master
 
   pull_request_target:
     branches:
-      - main
+      - master
 
     types:
       - opened
-      - reopened
+      - reopenedz
       - synchronize
       - labeled # benchmarks label required
   workflow_dispatch:
