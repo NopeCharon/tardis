@@ -75,8 +75,8 @@ jobs:
       - name: Install asv
         run: pip install asv
 
-      - name: Accept all asv questions
-        run: asv machine --yes
+      # - name: Accept all asv questions
+      #   run: asv machine --yes
 
       - name: Run benchmarks for last 5 commits if not PR
         if: github.event_name != 'pull_request_target'
