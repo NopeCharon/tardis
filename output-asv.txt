@@ -1,0 +1,9 @@
+· Creating environments
+· Discovering benchmarks
+·· Uninstalling from mamba-py3.12
+·· Installing c23fc117 <master> into mamba-py3.12
+· Running 1 total benchmarks (1 commits * 1 environments * 1 benchmarks)
+[ 0.00%] · For tardis commit c23fc117 <master>:
+[ 0.00%] ·· Benchmarking mamba-py3.12
+[50.00%] ··· Running (run_tardis.BenchmarkRunTardis.time_run_tardis--).
+[100.00%] ··· run_tardis.BenchmarkRunTardis.time_run_tardis             979±30ms
