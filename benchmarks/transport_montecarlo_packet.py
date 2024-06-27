@@ -5,7 +5,7 @@ Basic TARDIS Benchmark.
 import numpy as np
 from asv_runner.benchmarks.mark import parameterize, skip_benchmark
 
-import tardis.opacities.opacities as opacities
+from tardis.transport.montecarlo import opacities
 import tardis.transport.frame_transformations as frame_transformations
 import tardis.transport.geometry.calculate_distances as calculate_distances
 import tardis.transport.montecarlo.numba_interface as numba_interface
