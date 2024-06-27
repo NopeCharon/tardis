@@ -2,7 +2,6 @@
 Basic TARDIS Benchmark.
 """
 
-import numpy as np
 from asv_runner.benchmarks.mark import parameterize, skip_benchmark
 
 import tardis.transport.montecarlo.interaction as interaction
@@ -24,12 +23,11 @@ class BenchmarkMontecarloMontecarloNumbaInteraction(BenchmarkBase):
         init_nu = packet.nu
         init_energy = packet.energy
         time_explosion = self.verysimple_time_explosion
+        enable_full_relativity = self.verysimple_enable_full_relativity
 
-        interaction.thomson_scatter(packet, time_explosion)
-
-        assert np.abs(packet.mu - init_mu) > 1e-7
-        assert np.abs(packet.nu - init_nu) > 1e-7
-        assert np.abs(packet.energy - init_energy) > 1e-7
+        interaction.thomson_scatter(
+            packet, time_explosion, enable_full_relativity
+        )
 
     @parameterize(
         {
@@ -42,11 +40,10 @@ class BenchmarkMontecarloMontecarloNumbaInteraction(BenchmarkBase):
     )
     def time_line_scatter(self, line_interaction_type):
         packet = self.packet
-        init_mu = packet.mu
-        init_nu = packet.nu
-        init_energy = packet.energy
         packet.initialize_line_id(
-            self.verysimple_opacity_state, self.verysimple_time_explosion
+            self.verysimple_opacity_state,
+            self.verysimple_time_explosion,
+            self.verysimple_enable_full_relativity,
         )
         time_explosion = self.verysimple_time_explosion
 
@@ -55,11 +52,9 @@ class BenchmarkMontecarloMontecarloNumbaInteraction(BenchmarkBase):
             time_explosion,
             line_interaction_type,
             self.verysimple_opacity_state,
+            self.verysimple_enable_full_relativity,
+            self.verysimple_continuum_processes_enabled,
         )
-
-        assert np.abs(packet.mu - init_mu) > 1e-7
-        assert np.abs(packet.nu - init_nu) > 1e-7
-        assert np.abs(packet.energy - init_energy) > 1e-7
 
     @parameterize(
         {
@@ -88,7 +83,9 @@ class BenchmarkMontecarloMontecarloNumbaInteraction(BenchmarkBase):
         packet.mu = test_packet["mu"]
         packet.energy = test_packet["energy"]
         packet.initialize_line_id(
-            self.verysimple_opacity_state, self.verysimple_time_explosion
+            self.verysimple_opacity_state,
+            self.verysimple_time_explosion,
+            self.verysimple_enable_full_relativity,
         )
 
         time_explosion = self.verysimple_time_explosion
@@ -98,6 +95,5 @@ class BenchmarkMontecarloMontecarloNumbaInteraction(BenchmarkBase):
             emission_line_id,
             time_explosion,
             self.verysimple_opacity_state,
+            self.verysimple_enable_full_relativity,
         )
-
-        assert packet.next_line_id == emission_line_id + 1

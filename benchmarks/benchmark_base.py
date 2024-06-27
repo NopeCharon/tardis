@@ -5,27 +5,22 @@ from tempfile import mkstemp
 
 import astropy.units as u
 import numpy as np
-import pandas as pd
 from numba import njit
 
 from benchmarks.util.nlte import NLTE
+from tardis import run_tardis
 from tardis.io.atom_data import AtomData
 from tardis.io.configuration import config_reader
 from tardis.io.configuration.config_reader import Configuration
 from tardis.io.util import YAMLLoader, yaml_load_file
 from tardis.model import SimulationState
-from tardis.transport.montecarlo import RPacket
-from tardis.transport.montecarlo.numba_interface import (
-    NumbaModel,
-    opacity_state_initialize,
-)
-from tardis.transport.montecarlo.packet_collections import (
-    VPacketCollection,
-)
+from tardis.model.geometry.radial1d import NumbaRadial1DGeometry
 from tardis.simulation import Simulation
 from tardis.tests.fixtures.atom_data import DEFAULT_ATOM_DATA_UUID
 from tardis.tests.fixtures.regression_data import RegressionData
-from tardis.transport.montecarlo import RPacket, opacity_state_initialize
+from tardis.transport.montecarlo import RPacket, montecarlo_configuration
+from tardis.transport.montecarlo.estimators import radfield_mc_estimators
+from tardis.transport.montecarlo.numba_interface import opacity_state_initialize
 from tardis.transport.montecarlo.packet_collections import (
     VPacketCollection,
 )
@@ -68,7 +63,11 @@ class BenchmarkBase:
     def tardis_ref_path(self):
         # TODO: This route is fixed but needs to get from the arguments given in the command line.
         #       /app/tardis-refdata
-        return "/app/tardis-refdata"
+        ref_data_path = Path(
+            Path(__file__).parent.parent,
+            "tardis-refdata",
+        ).resolve()
+        return ref_data_path
 
     @property
     def atomic_dataset(self) -> AtomData:
@@ -258,6 +257,36 @@ class BenchmarkBase:
         return opacity_state_initialize(
             self.nb_simulation_verysimple.plasma,
             line_interaction_type="macroatom",
+            disable_line_scattering=self.nb_simulation_verysimple.transport.montecarlo_configuration.DISABLE_LINE_SCATTERING,
+            continuum_processes_enabled=self.nb_simulation_verysimple.transport.montecarlo_configuration.CONTINUUM_PROCESSES_ENABLED,
+        )
+
+    @property
+    def verysimple_enable_full_relativity(self):
+        return self.nb_simulation_verysimple.transport.enable_full_relativity
+
+    @property
+    def verysimple_disable_line_scattering(self):
+        return (
+            self.nb_simulation_verysimple.transport.montecarlo_configuration.DISABLE_LINE_SCATTERING
+        )
+
+    @property
+    def verysimple_continuum_processes_enabled(self):
+        return (
+            self.nb_simulation_verysimple.transport.montecarlo_configuration.CONTINUUM_PROCESSES_ENABLED
+        )
+
+    @property
+    def verysimple_tau_russian(self):
+        return (
+            self.nb_simulation_verysimple.transport.montecarlo_configuration.VPACKET_TAU_RUSSIAN
+        )
+
+    @property
+    def verysimple_survival_probability(self):
+        return (
+            self.nb_simulation_verysimple.transport.montecarlo_configuration.SURVIVAL_PROBABILITY
         )
 
     @property
@@ -321,13 +350,47 @@ class BenchmarkBase:
             return option
 
     @property
-    def tardis_ref_data(self):
-        # TODO: This function is not working in the benchmarks.
-        if self.generate_reference:
-            mode = "w"
-        else:
-            mode = "r"
-        with pd.HDFStore(
-            f"{self.tardis_ref_path}/unit_test_data.h5", mode=mode
-        ) as store:
-            yield store
+    def verysimple_radfield_mc_estimators(self):
+        plasma = self.nb_simulation_verysimple.plasma
+        return radfield_mc_estimators.initialize_estimator_statistics(
+            plasma.tau_sobolevs.shape, plasma.gamma.shape
+        )
+
+    @property
+    def montecarlo_configuration(self):
+        return montecarlo_configuration.MonteCarloConfiguration()
+
+    @property
+    def rpacket_tracker(self):
+        return self.simulation_rpacket_tracking_enabled.transport.transport_state.rpacket_tracker
+
+    @property
+    def transport_state(self):
+        return self.nb_simulation_verysimple.transport.transport_state
+
+    @property
+    def simulation_rpacket_tracking_enabled(self):
+        config_verysimple = self.config_verysimple
+        config_verysimple.montecarlo.iterations = 3
+        config_verysimple.montecarlo.no_of_packets = 4000
+        config_verysimple.montecarlo.last_no_of_packets = -1
+        config_verysimple.spectrum.virtual.virtual_packet_logging = True
+        config_verysimple.montecarlo.no_of_virtual_packets = 1
+        config_verysimple.montecarlo.tracking.track_rpacket = True
+        config_verysimple.spectrum.num = 2000
+        atomic_data = deepcopy(self.atomic_dataset)
+        sim = run_tardis(
+            config_verysimple,
+            atom_data=atomic_data,
+            show_convergence_plots=False,
+        )
+        return sim
+
+    @property
+    def geometry(self):
+        return NumbaRadial1DGeometry(
+            r_inner=np.array([6.912e14, 8.64e14], dtype=np.float64),
+            r_outer=np.array([8.64e14, 1.0368e15], dtype=np.float64),
+            v_inner=np.array([-1, -1], dtype=np.float64),
+            v_outer=np.array([-1, -1], dtype=np.float64),
+        )
