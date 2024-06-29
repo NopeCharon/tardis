@@ -99,7 +99,7 @@ jobs:
 
       - name: Run benchmarks
         if: github.event_name == 'pull_request_target'
-        run: asv run --config asv.conf.json
+        run: asv run
       - run: git remote add upstream https://github.com/AkashKumar7902/tardis.git
       - run: git fetch upstream master
       - name: Compare Master and PR head
