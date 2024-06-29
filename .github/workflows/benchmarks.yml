@@ -95,8 +95,7 @@ jobs:
           destination-repository-name: tardis-benchmarks
           user-email: tardis.sn.bot@gmail.com
           target-branch: main
-          target-directory: .asv
-      
+          target-directory: .asv      
       - name: Remove asv
         if: github.event_name != 'pull_request_target'
         run: rm -rf .asv
@@ -125,7 +124,7 @@ jobs:
         run: |
           mkdir -p PR-${{ github.event.number }}
           cp asv.conf.json -r PR-${{ github.event.number }}
-          cd PR-${{ github.event.number }}
+          cd PR-${{ github.event.number }}/
           asv machine --yes
           asv run ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | tee asv-output-PR.log
           if grep -q failed asv-output-PR.log; then
