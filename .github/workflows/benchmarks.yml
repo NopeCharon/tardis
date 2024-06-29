@@ -119,10 +119,11 @@ jobs:
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
-          base_commit=$(git merge-base main feature) && \
-          latest_commit=$(git rev-parse feature) && \
-          git log --oneline -1 $base_commit > commits.txt && \
-          git log --oneline -1 $latest_commit >> commits.txt
+          base_commit=$(git merge-base master ${GITHUB_REF#refs/heads/}) && \
+          latest_commit=$(git rev-parse ${GITHUB_REF#refs/heads/) && \
+          echo $base_commit > commits.txt && \
+          echo $latest_commit >> commits.txt
+
 
           asv run HASHFILE:commits.txt | tee asv-output-PR.log
           if grep -q failed asv-output-PR.log; then
