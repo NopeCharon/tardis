@@ -119,9 +119,9 @@ jobs:
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
-          base_commit=$(git merge-base master ${GITHUB_REF#refs/heads/}) && \
-          latest_commit=$(git rev-parse ${GITHUB_REF#refs/heads/) && \
-          echo $base_commit > commits.txt && \
+          base_commit=$(git merge-base master ${GITHUB_REF#refs/heads/}) 
+          latest_commit=$(git rev-parse ${GITHUB_REF#refs/heads/) 
+          echo $base_commit > commits.txt 
           echo $latest_commit >> commits.txt
 
 
