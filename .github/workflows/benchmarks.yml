@@ -96,9 +96,6 @@ jobs:
           user-email: tardis.sn.bot@gmail.com
           target-branch: main
           target-directory: .asv      
-      - name: Remove asv
-        if: github.event_name != 'pull_request_target'
-        run: rm -rf .asv
 
       - name: Run benchmarks
         if: github.event_name == 'pull_request_target'
@@ -119,18 +116,20 @@ jobs:
         uses: juliangruber/read-file-action@v1.0.0
         with:
           path: asv-compare-changed-output.log
+      - name: Remove asv
+        if: github.event_name != 'pull_request_target'
+        run: rm -rf .asv
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
-          mkdir -p PR-${{ github.event.number }}
-          cp asv.conf.json -r PR-${{ github.event.number }}
-          cd PR-${{ github.event.number }}/
-          asv machine --yes
           asv run ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | tee asv-output-PR.log
           if grep -q failed asv-output-PR.log; then
             echo "Some benchmarks have failed!"
             exit 1
           fi
+          mkdir -p PR-${{ github.event.number }}
+          cp -r .asv PR-${{ github.event.number }}
+          
       - name: Generate Graphs and HTML of PR
         if: github.event_name == 'pull_request_target'
         run: |
