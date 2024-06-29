@@ -116,9 +116,6 @@ jobs:
         uses: juliangruber/read-file-action@v1.0.0
         with:
           path: asv-compare-changed-output.log
-      - name: Remove asv
-        if: github.event_name != 'pull_request_target'
-        run: rm -rf .asv
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
