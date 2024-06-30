@@ -154,9 +154,6 @@ jobs:
               echo "Some benchmarks have failed!"
               exit 1
             fi
-          mkdir -p PR-${{ github.event.number }}
-          cp -r .asv PR-${{ github.event.number }}
-          cp asv.conf.json PR-${{ github.event.number }}
       
       - name: Generate Graphs and HTML of PR
         if: github.event_name == 'pull_request_target'
@@ -166,7 +163,13 @@ jobs:
 
       - name: Delete env files of PR
         if: github.event_name == 'pull_request_target'
-        run: rm -r PR-${{ github.event.number }}/.asv/env
+        run: rm -r .asv/env
+      
+      - name: Move to PR directory 
+        if: github.event_name == 'pull_request_target'
+        run: |
+          mkdir -p PR-${{ github.event.number }}
+          cp -r .asv PR-${{ github.event.number }}
 
       - name: Push results of PR to results repository
         if: github.event_name == 'pull_request_target'
@@ -182,7 +185,6 @@ jobs:
           target-branch: main
           target-directory: PR
 
-      
       - name: Find Comment
         if: always() && github.event_name == 'pull_request_target'
         uses: peter-evans/find-comment@v1
