@@ -149,7 +149,7 @@ jobs:
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
-          asv run master..${{ github.ref_name }} | tee asv-output-PR.log  
+          asv run --steps 2 | tee asv-output-PR.log  
             if grep -q failed asv-output-PR.log; then 
               echo "Some benchmarks have failed!"
               exit 1
