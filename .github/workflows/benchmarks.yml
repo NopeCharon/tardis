@@ -156,6 +156,7 @@ jobs:
             fi
           mkdir -p PR-${{ github.event.number }}
           cp -r .asv PR-${{ github.event.number }}
+          cp asv.conf.json PR-${{ github.event.number }}
       
       - name: Generate Graphs and HTML of PR
         if: github.event_name == 'pull_request_target'
